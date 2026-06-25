@@ -1,0 +1,57 @@
+<DownloaderLayout>:
+    orientation: "vertical"
+    padding: 20
+    spacing: 15
+
+    canvas.before:
+        Color:
+            rgba: 0.05, 0.05, 0.1, 1  # latar belakang gelap kebiruan
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    TextInput:
+        id: url
+        hint_text: "Masukkan URL (YouTube, TikTok, Facebook, Instagram, Twitter/X)"
+        size_hint_y: None
+        height: 45
+        background_color: 0.1, 0.15, 0.2, 1   # biru gelap
+        foreground_color: 1, 1, 1, 1
+        padding: [10, 10]
+
+    BoxLayout:
+        size_hint_y: None
+        height: 45
+        spacing: 10
+
+        Spinner:
+            id: mode
+            text: "MP4"
+            values: ["MP4", "MP3"]
+            background_color: 0.15, 0.2, 0.25, 1
+            color: 0.8, 0.9, 1, 1   # teks putih kebiruan
+
+        Spinner:
+            id: quality
+            text: "max"
+            values: ["360p", "480p", "720p", "1080p", "max"]
+            background_color: 0.15, 0.2, 0.25, 1
+            color: 0.8, 0.9, 1, 1
+
+    Button:
+        text: "Download"
+        size_hint_y: None
+        height: 50
+        background_color: 0.0, 0.5, 0.7, 1   # biru laut terang
+        color: 1, 1, 1, 1
+        bold: True
+        on_press: root.start_download()
+
+    TextInput:
+        id: log
+        readonly: True
+        size_hint_y: 1
+        text: ""
+        background_color: 0.05, 0.07, 0.1, 1   # biru gelap pekat
+        foreground_color: 0.3, 0.9, 1, 1       # teks cyan terang
+        font_size: 14
