@@ -1,5 +1,36 @@
-# Reyette Downloader
-tools ini membantu kamu mengunduh mp3/mp4 dari platform tiktok,youtube,facebook,instagram dan x.
+# Reyette Downloader & Converter 🎬🎵
 
-## Note
-Saat ini hanya suport di windows saja untuk update selanjutnya saya akan mengusahakan suport di semua os termasuk android.
+Reyette adalah tool sederhana berbasis **Python + FFmpeg + yt-dlp** untuk mengunduh video/audio dari berbagai platform (YouTube, TikTok, Instagram, Facebook, Twitter/X) dan mengonversinya ke format MP4/MP3 dengan dukungan **GPU encoder** (NVENC, AMF, QSV) maupun fallback CPU (libx264).
+
+---
+
+## ✨ Fitur Utama
+- 🔍 Deteksi otomatis encoder (NVIDIA, AMD, Intel, CPU).
+- 🎥 Download video dengan pilihan kualitas: 360p, 480p, 720p, 1080p, atau max.
+- 🎵 Ekstrak audio MP3 dengan kualitas 192 kbps.
+- ⚡ Konversi cepat menggunakan GPU encoder bila tersedia.
+- 📂 Output tersimpan rapi per platform (`audio/` dan `video/`).
+- 🛡️ Fallback otomatis ke CPU libx264 jika GPU tidak mendukung.
+
+---
+
+## 📦 Persyaratan
+- Python 3.8+
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+- [FFmpeg](https://ffmpeg.org/download.html) (pastikan ada di PATH)
+- Driver GPU terbaru (jika ingin pakai NVENC/AMF/QSV)
+
+How to use with ui (Work on windows only):
+```bash
+- pip install -r requirements.txt
+- start.bat
+```
+
+How to use no ui:
+```bash
+- pip install yt-dlp
+- python main_noui.py
+```
+## Tahnks to
+* [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+* [Reyette](https://github.com/Zeev-x)
