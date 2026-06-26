@@ -6,7 +6,7 @@ Reyette adalah tool sederhana berbasis **Python + FFmpeg + yt-dlp** untuk mengun
 
 ## ✨ Fitur Utama
 - 🔍 Deteksi otomatis encoder (NVIDIA, AMD, Intel, CPU).
-- 🎥 Download video dengan pilihan kualitas: 360p, 480p, 720p, 1080p, atau max.
+- 🎥 Download video dengan berbagai kualitas.
 - 🎵 Ekstrak audio MP3 dengan kualitas 192 kbps.
 - ⚡ Konversi cepat menggunakan GPU encoder bila tersedia.
 - 📂 Output tersimpan rapi per platform (`audio/` dan `video/`).
