@@ -1,3 +1,7 @@
+# Work on Windows only
+# Created by Reyette
+# Thanks for yt-dlp and ffmpeg
+
 import os
 import subprocess
 import yt_dlp
@@ -6,11 +10,11 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 
-BASE_DIR = "E:\\Reyette-Downloader"
+BASE_DIR = "Reyette-Downloader"
 
 def detect_encoder():
     try:
-        result = subprocess.run(["ffmpeg", "-encoders"], capture_output=True, text=True)
+        result = subprocess.run(["ffmpeg", "-encoders"], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
         encoders = result.stdout.lower()
         if "h264_nvenc" in encoders:
             return "h264_nvenc"   # NVIDIA
@@ -27,10 +31,9 @@ def build_ffmpeg_cmd(input_file, output_file, encoder=None):
     if encoder is None:
         encoder = detect_encoder()
 
-    cmd = ["ffmpeg", "-i", input_file, "-c:v", encoder]
+    cmd = ["ffmpeg", "-y", "-i", input_file, "-pix_fmt", "yuv420p", "-c:v", encoder]
 
     if encoder in ["h264_nvenc", "h264_amf", "h264_qsv"]:
-        # GPU encoder → pakai CQ
         cmd += [
             "-preset", "slow",
             "-rc:v", "vbr",
@@ -40,10 +43,9 @@ def build_ffmpeg_cmd(input_file, output_file, encoder=None):
             "-bufsize", "25M",
         ]
     else:
-        # CPU libx264 → pakai CRF
         cmd += [
             "-preset", "slow",
-            "-crf", "23",   # default CRF untuk kualitas seimbang
+            "-crf", "23",
         ]
 
     cmd += ["-c:a", "aac", "-b:a", "320k", output_file]
@@ -98,7 +100,7 @@ class DownloaderLayout(BoxLayout):
 
     def _do_download(self, url, mode, quality):
         platform = self.detect_platform(url)
-        self.add_log(f"Mulai mengunduh dari {platform}: {url} ({mode}, {quality}) → {platform}")
+        self.add_log(f"Mulai mengunduh dari {platform}: {url}")
 
         if mode == "MP3":
             target_dir = os.path.join(BASE_DIR, "audio", platform)
@@ -165,7 +167,7 @@ class DownloaderLayout(BoxLayout):
                                 base, _ = os.path.splitext(input_file)
                                 output_file = f"{base}_{quality}.mp4"
                                 cmd = build_ffmpeg_cmd(input_file, output_file)
-                                self.add_log(f"🔍 Encoder terdeteksi: {cmd[4]}")
+                                self.add_log(f"🔍 Encoder terdeteksi: {cmd[7]}")
                                 subprocess.run(cmd, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
                                 self.add_log(f"Konversi selesai: {output_file}")
                                 if os.path.exists(input_file):
@@ -186,7 +188,7 @@ class DownloaderLayout(BoxLayout):
                         base, _ = os.path.splitext(input_file)
                         output_file = f"{base}_{quality}.mp4"
                         cmd = build_ffmpeg_cmd(input_file, output_file)
-                        self.add_log(f"🔍 Encoder terdeteksi: {cmd[4]}")
+                        self.add_log(f"🔍 Encoder terdeteksi: {cmd[7]}")
                         subprocess.run(cmd, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
                         self.add_log(f"Encode selesai: {output_file}")
                         if os.path.exists(input_file):
