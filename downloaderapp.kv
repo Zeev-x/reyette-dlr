@@ -16,7 +16,7 @@
         bold: True
         color: 0.4, 0.7, 1, 1
         halign: "center"
-
+    
     TextInput:
         id: url
         hint_text: "Masukkan URL (YouTube, TikTok, Facebook, Instagram, Twitter/X)"
@@ -61,16 +61,21 @@
     TextInput:
         id: log
         readonly: True
-        size_hint_y: 4
+        size_hint_y: 5
         background_color: 0.05, 0.07, 0.1, 1
         foreground_color: 0.3, 0.9, 1, 1
         font_size: 10
         padding: [10, 10]
         multiline: True
     
-    Label:
-        text: "Copyright © 2026 Reyette Downloader. All rights reserved."
-        font_size: 8
-        bold: False
-        color: 0.4, 0.7, 1, 1
+    TextInput:
+        hint_text: "Copyright © 2026 Reyette Downloader. All rights reserved."
+        readonly: True
+        size_hint_y: 0.5
+        background_color: 0.05, 0.07, 0.1, 0
+        foreground_color: 0, 0.9, 1, 1
+        font_size: 10
+        padding: [10, 10]
         halign: "center"
+        valign: "middle"
+        text_size: self.size
