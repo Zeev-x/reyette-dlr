@@ -10,11 +10,16 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 
-BASE_DIR = "Reyette-Downloader"
+BASE_DIR = "E:\\Reyette-Downloader"
 
 def detect_encoder():
     try:
-        result = subprocess.run(["ffmpeg", "-encoders"], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        result = subprocess.run(
+            ["ffmpeg", "-encoders"],
+            capture_output=True,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
         encoders = result.stdout.lower()
         if "h264_nvenc" in encoders:
             return "h264_nvenc"   # NVIDIA
@@ -23,7 +28,7 @@ def detect_encoder():
         elif "h264_qsv" in encoders:
             return "h264_qsv"     # Intel QuickSync
         else:
-            return "libx264"      # Fallback CPU (Android/umum)
+            return "libx264"      # Fallback CPU
     except Exception:
         return "libx264"
 
@@ -63,6 +68,32 @@ class DownloaderLayout(BoxLayout):
             self.ids.log.text = current + str(text) + "\n"
         Clock.schedule_once(update)
 
+    def clear_log(self):
+        def update(dt):
+            self.ids.log.text = ""
+        Clock.schedule_once(update)
+
+    def run_ffmpeg_with_log(self, cmd, output_file):
+        try:
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
+            for line in process.stdout:
+                line = line.strip()
+                if line:
+                    self.add_log(line)
+            process.wait()
+            if process.returncode == 0:
+                self.add_log(f"Encode selesai: {output_file}")
+            else:
+                self.add_log(f"FFmpeg gagal dengan kode {process.returncode}")
+        except Exception as e:
+            self.add_log(f"Error ffmpeg: {e}")
+
     def detect_platform(self, url: str) -> str:
         if "youtube.com" in url or "youtu.be" in url:
             return "youtube"
@@ -82,9 +113,9 @@ class DownloaderLayout(BoxLayout):
             percent = d.get('_percent_str', '').strip()
             speed = d.get('_speed_str', '')
             eta = d.get('_eta_str', '')
-            self.add_log(f"⬇️ {percent} | {speed} | ETA {eta}")
+            self.add_log(f"{percent} | {speed} | ETA {eta}")
         elif d['status'] == 'finished':
-            self.add_log("✅ Download selesai, mulai konversi...")
+            self.add_log("Download selesai")
 
     def start_download(self):
         url = self.ids.url.text.strip()
@@ -94,6 +125,9 @@ class DownloaderLayout(BoxLayout):
         if not url:
             self.add_log("URL kosong!")
             return
+
+        # clear log sebelum mulai download baru
+        self.clear_log()
 
         self.add_log("Menjalankan proses download...")
         threading.Thread(target=self._do_download, args=(url, mode, quality), daemon=True).start()
@@ -108,7 +142,6 @@ class DownloaderLayout(BoxLayout):
             target_dir = os.path.join(BASE_DIR, "video", platform)
         os.makedirs(target_dir, exist_ok=True)
 
-        # Opsi yt_dlp
         if mode == "MP3":
             ydl_opts = {
                 'outtmpl': f'{target_dir}/%(title)s.%(ext)s',
@@ -148,51 +181,21 @@ class DownloaderLayout(BoxLayout):
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=False)
-                if 'entries' in info:
-                    # Playlist
-                    for entry in info['entries']:
-                        if not entry:
-                            continue
-                        try:
-                            entry_url = entry.get('url') or entry.get('webpage_url')
-                            if not entry_url:
-                                self.add_log("Entry playlist tidak punya URL, skip.")
-                                continue
-
-                            result = ydl.extract_info(entry_url, download=True)
-                            input_file = ydl.prepare_filename(result)
-
-                            if mode == "MP4":
-                                base, _ = os.path.splitext(input_file)
-                                output_file = f"{base}_{quality}.mp4"
-                                cmd = build_ffmpeg_cmd(input_file, output_file)
-                                self.add_log(f"🔍 Encoder terdeteksi: {cmd[7]}")
-                                subprocess.run(cmd, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
-                                self.add_log(f"Konversi selesai: {output_file}")
-                                if os.path.exists(input_file):
-                                    os.remove(input_file)
-                            else:
-                                self.add_log("File MP3 siap digunakan!")
-                                if os.path.exists(input_file):
-                                    os.remove(input_file)
-
-                        except Exception as e:
-                            self.add_log(f"Error item playlist: {e}")
+                result = ydl.extract_info(url, download=True)
+                input_file = ydl.prepare_filename(result)
+                self.add_log(f"Memulai encode video: {input_file}")
+                if mode == "MP4":
+                    base, _ = os.path.splitext(input_file)
+                    output_file = f"{base}_{quality}.mp4"
+                    cmd = build_ffmpeg_cmd(input_file, output_file)
+                    self.add_log(f"Encoder terdeteksi: {cmd[7]}")
+                    self.run_ffmpeg_with_log(cmd, output_file)
+                    if os.path.exists(input_file):
+                        os.remove(input_file)
                 else:
-                    # Single video fallback
-                    result = ydl.extract_info(url, download=True)
-                    input_file = ydl.prepare_filename(result)
-                    self.add_log(f"Selesai unduh dan mulai encode")
-                    if mode == "MP4":
-                        base, _ = os.path.splitext(input_file)
-                        output_file = f"{base}_{quality}.mp4"
-                        cmd = build_ffmpeg_cmd(input_file, output_file)
-                        self.add_log(f"🔍 Encoder terdeteksi: {cmd[7]}")
-                        subprocess.run(cmd, check=True, creationflags=subprocess.CREATE_NO_WINDOW)
-                        self.add_log(f"Encode selesai: {output_file}")
-                        if os.path.exists(input_file):
-                            os.remove(input_file)
+                    self.add_log("File MP3 siap digunakan!")
+                    if os.path.exists(input_file):
+                        os.remove(input_file)
 
         except Exception as e:
             self.add_log(f"Error download :{e}")
