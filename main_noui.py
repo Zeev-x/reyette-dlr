@@ -7,7 +7,7 @@ import os
 import subprocess
 import yt_dlp
 
-BASE_DIR = "E:\\Reyette-Downloader"
+BASE_DIR = "Reyette-Downloader"
 
 def detect_encoder():
     try:
