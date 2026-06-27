@@ -7,11 +7,11 @@ import os
 import subprocess
 import yt_dlp
 
-BASE_DIR = "Reyette-Downloader"
+BASE_DIR = "E:\\Reyette-Downloader"
 
 def detect_encoder():
     try:
-        result = subprocess.run(["ffmpeg", "-encoders"], capture_output=True, text=True)
+        result = subprocess.run(["ffmpeg", "-encoders"], capture_output=True, text=True, encoding="utf-8")
         encoders = result.stdout.lower()
         if "h264_nvenc" in encoders:
             return "h264_nvenc"   # NVIDIA
