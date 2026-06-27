@@ -1,81 +1,147 @@
+#:import dp kivy.metrics.dp
+#:import rgba kivy.utils.get_color_from_hex
+
 <DownloaderLayout>:
     orientation: "vertical"
-    padding: 10
-    spacing: 10
+    padding: dp(20)
+    spacing: dp(14)
 
     canvas.before:
         Color:
-            rgba: 0.02, 0.06, 0.1, 1
+            rgba: rgba("#09090B")
         Rectangle:
             pos: self.pos
             size: self.size
 
+        # Blob dekoratif
+        Color:
+            rgba: .25,.45,1,.12
+        Ellipse:
+            size: dp(380), dp(380)
+            pos: -dp(140), self.height - dp(220)
+
+        Color:
+            rgba: .45,.2,1,.08
+        Ellipse:
+            size: dp(420), dp(420)
+            pos: self.width - dp(220), -dp(200)
+
     Label:
-        text: "Reyette Downloader"
-        font_size: 34
-        bold: True
-        color: 0.4, 0.7, 1, 1
+        text: "[b]Reyette Downloader[/b]"
+        markup: True
+        font_size: "30sp"
+        color: rgba("#FFFFFF")
+        text_size: self.size
         halign: "center"
-    
-    TextInput:
-        id: url
-        hint_text: "Masukkan URL (YouTube, TikTok, Facebook, Instagram, Twitter/X)"
+
+    # URL Input dengan card style
+    FloatLayout:
         size_hint_y: None
-        height: 40
-        background_color: 0.1, 0.15, 0.2, 1   # biru gelap
-        foreground_color: 1, 1, 1, 1
-        padding: [12, 12]
-        font_size: 15
+        height: dp(60)
+
+        canvas.before:
+            Color:
+                rgba: .12,.13,.17,.96
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
+                radius: [18]
+
+            Color:
+                rgba: 1,1,1,.05
+            Line:
+                rounded_rectangle: (self.x, self.y, self.width, self.height, 18)
+                width: 1
+
+        TextInput:
+            id: url
+            hint_text: "Masukkan URL (YouTube, TikTok, Facebook, Instagram, Twitter/X)"
+            background_color: 0,0,0,0
+            foreground_color: 1,1,1,1
+            cursor_color: .3,.6,1,1
+            padding: [14, 14]
+            font_size: 15
+            size_hint: .96, .8
+            pos_hint: {"center_x": .5, "center_y": .5}
 
     BoxLayout:
         size_hint_y: None
-        height: 50
-        spacing: 12
+        height: dp(50)
+        spacing: dp(12)
 
         Spinner:
             id: mode
             text: "MP4"
             values: ["MP4", "MP3"]
-            background_color: 0.15, 0.2, 0.25, 1
-            color: 0.8, 0.9, 1, 1
+            background_normal: ""
+            background_color: .13,.14,.18,1
+            color: 1,1,1,1
             font_size: 15
 
         Spinner:
             id: quality
             text: "max"
             values: ["360p", "480p", "720p", "1080p", "max"]
-            background_color: 0.15, 0.2, 0.25, 1
-            color: 0.8, 0.9, 1, 1
+            background_normal: ""
+            background_color: .13,.14,.18,1
+            color: 1,1,1,1
             font_size: 15
 
+    # Tombol download dengan style modern
     Button:
-        text: "Download"
+        text: "[b]Download[/b]"
+        markup: True
         size_hint_y: None
-        height: 50
-        background_color: 0.0, 0.5, 0.7, 1   # biru laut terang
-        color: 1, 1, 1, 1
-        bold: True
+        height: dp(52)
+        background_normal: ""
+        background_down: ""
+        background_color: .23,.42,.98,1
+        color: 1,1,1,1
         font_size: 16
         on_press: root.start_download()
+        canvas.before:
+            Color:
+                rgba: 0,0,0,.25
+            RoundedRectangle:
+                pos: self.pos[0], self.pos[1] - dp(2)
+                size: self.size
+                radius: [14]
 
-    TextInput:
-        id: log
-        readonly: True
+    # Log area dengan card style
+    FloatLayout:
         size_hint_y: 5
-        background_color: 0.05, 0.07, 0.1, 1
-        foreground_color: 0.3, 0.9, 1, 1
+
+        canvas.before:
+            Color:
+                rgba: .11,.12,.15,.97
+            RoundedRectangle:
+                pos: self.pos
+                size: self.size
+                radius: [20]
+
+            Color:
+                rgba: 1,1,1,.03
+            Line:
+                rounded_rectangle: (self.x, self.y, self.width, self.height, 20)
+                width: 1
+
+        TextInput:
+            id: log
+            readonly: True
+            background_color: 0,0,0,0
+            foreground_color: 1,1,1,1
+            font_size: 11
+            padding: [12, 12]
+            multiline: True
+            text: ""
+            size_hint: .96,.96
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+    Label:
+        text: "Copyright © 2026 Reyette Downloader. All rights reserved."
+        size_hint_y: None
+        height: dp(20)
+        color: .45,.5,.58,1
         font_size: 10
-        padding: [10, 10]
-        multiline: True
-    
-    TextInput:
-        hint_text: "Copyright © 2026 Reyette Downloader. All rights reserved."
-        readonly: True
-        size_hint_y: 0.5
-        background_color: 0.05, 0.07, 0.1, 0
-        foreground_color: 0, 0.9, 1, 1
-        font_size: 10
-        padding: [10, 10]
-        halign: "center"
-        valign: "middle"
         text_size: self.size
+        halign: "center"
