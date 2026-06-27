@@ -10,7 +10,7 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 
-BASE_DIR = "Reyette-Downloader"
+BASE_DIR = "E:\\Reyette-Downloader"
 
 def detect_encoder():
     try:
@@ -18,6 +18,7 @@ def detect_encoder():
             ["ffmpeg", "-encoders"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
             creationflags=subprocess.CREATE_NO_WINDOW
         )
         encoders = result.stdout.lower()
@@ -80,6 +81,7 @@ class DownloaderLayout(BoxLayout):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
+                encoding="utf-8",
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             for line in process.stdout:
