@@ -1,3 +1,3 @@
 @echo off
 call x\Scripts\activate.bat
-start .\x\Scripts\pythonw.exe main.py
+start pyw -3.12 main.py
