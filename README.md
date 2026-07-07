@@ -15,7 +15,7 @@ Reyette adalah tool sederhana berbasis **Python + FFmpeg + yt-dlp** untuk mengun
 ---
 
 ## 📦 Persyaratan
-- Python 3.8+
+- Gunakan Python 3.12 (jika ingin pakai ui)
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp)
 - [FFmpeg](https://ffmpeg.org/download.html) (pastikan ada di PATH)
 - Driver GPU terbaru (jika ingin pakai NVENC/AMF/QSV)
