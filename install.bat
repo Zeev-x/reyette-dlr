@@ -1,6 +1,6 @@
 @echo off
-python -m venv x
+py -3.12 -m venv x
 call x\Scripts\activate.bat
-pip install -r requirements.txt
+py -3.12 -m pip install -r requirements.txt
 echo "Instalasi selesai. Jalankan main.py untuk memulai aplikasi."
 pause
