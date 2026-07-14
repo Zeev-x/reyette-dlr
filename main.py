@@ -10,7 +10,7 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 
-BASE_DIR = "E:\\Reyette-Downloader"
+BASE_DIR = "D:\\Reyette-Downloader"
 
 def detect_encoder():
     try:
