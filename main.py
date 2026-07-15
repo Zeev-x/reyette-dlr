@@ -6,16 +6,21 @@ import os
 import subprocess
 import yt_dlp
 import threading
+import re
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 
-BASE_DIR = "D:\\Reyette-Downloader"
+BASE_DIR = "Reyette-Downloader"
+
+def sanitize_filename(name: str) -> str:
+    name = re.sub(r'[\\/*?:"<>|#]', '', name)
+    return name.strip().replace(' ', '_')
 
 def detect_encoder():
     try:
         result = subprocess.run(
-            ["ffmpeg", "-encoders"],
+            ["ffmpeg", "-hide_banner", "-encoders"],
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -33,11 +38,35 @@ def detect_encoder():
     except Exception:
         return "libx264"
 
-def build_ffmpeg_cmd(input_file, output_file, encoder=None):
+def double_cmd(video_file, audio_file, output_file, encoder=None):
     if encoder is None:
         encoder = detect_encoder()
 
-    cmd = ["ffmpeg", "-y", "-i", input_file, "-pix_fmt", "yuv420p", "-c:v", encoder]
+    cmd = ["ffmpeg", "-y", "-i", video_file,"-i", audio_file, "-pix_fmt", "yuv420p", "-c:v", encoder]
+
+    if encoder in ["h264_nvenc", "h264_amf", "h264_qsv"]:
+        cmd += [
+            "-preset", "slow",
+            "-rc:v", "vbr",
+            "-cq", "8",
+            "-b:v", "16M",
+            "-maxrate", "20M",
+            "-bufsize", "25M",
+        ]
+    else:
+        cmd += [
+            "-preset", "slow",
+            "-crf", "23",
+        ]
+
+    cmd += ["-c:a", "aac", "-b:a", "320k", output_file]
+    return cmd
+
+def single_cmd(video_file, output_file, encoder=None):
+    if encoder is None:
+        encoder = detect_encoder()
+
+    cmd = ["ffmpeg", "-y", "-i", video_file, "-pix_fmt", "yuv420p", "-c:v", encoder]
 
     if encoder in ["h264_nvenc", "h264_amf", "h264_qsv"]:
         cmd += [
@@ -101,21 +130,29 @@ class DownloaderLayout(BoxLayout):
             return "youtube"
         elif "tiktok.com" in url:
             return "tiktok"
-        elif "facebook.com" in url:
+        elif "facebook.com" in url or "fb.watch" in url:
             return "facebook"
         elif "instagram.com" in url:
             return "instagram"
+        elif "xhamster.com" in url:
+            return "xhamster"
+        elif "xvideos.com" in url:
+            return "xvideos"
+        elif "xnxx.com" in url:
+            return "xnxx"
         elif "twitter.com" in url or "x.com" in url:
             return "twitter"
         else:
             return "other"
-
+        
+        
     def progress_hook(self, d):
         if d['status'] == 'downloading':
-            percent = d.get('_percent_str', '').strip()
-            speed = d.get('_speed_str', '')
+            p = d.get('_percent_str', '0%')
+            s = d.get('_total_bytes_str') or d.get('_total_bytes_estimate_str', 'N/A')
+            spd = d.get('_speed_str', '')
             eta = d.get('_eta_str', '')
-            self.add_log(f"{percent} | {speed} | ETA {eta}")
+            self.add_log(f"Downloading {p} of {s} at speed {spd} estimated time {eta}")
         elif d['status'] == 'finished':
             self.add_log("Download selesai")
 
@@ -161,18 +198,18 @@ class DownloaderLayout(BoxLayout):
             }
         else:
             if quality == "360p":
-                fmt = "bestvideo[height<=360]+bestaudio/best"
+                fmt = "bestvideo[height<=360]"
             elif quality == "480p":
-                fmt = "bestvideo[height<=480]+bestaudio/best"
+                fmt = "bestvideo[height<=480]"
             elif quality == "720p":
-                fmt = "bestvideo[height<=720]+bestaudio/best"
+                fmt = "bestvideo[height<=720]"
             elif quality == "1080p":
-                fmt = "bestvideo[height<=1080]+bestaudio/best"
+                fmt = "bestvideo[height<=1080]"
             else:
-                fmt = "bestvideo+bestaudio/best"
+                fmt = "bestvideo"
 
-            ydl_opts = {
-                'outtmpl': f'{target_dir}/%(title)s.%(ext)s',
+            ydl_opts_v = {
+                'outtmpl': f'{target_dir}/v_.%(ext)s',
                 'format': fmt,
                 'logger': DummyLogger(),
                 'quiet': True,
@@ -181,23 +218,75 @@ class DownloaderLayout(BoxLayout):
                 'ignoreerrors': True,
             }
 
+            ydl_opts_a = {
+                'outtmpl': f'{target_dir}/a_.%(ext)s',
+                'format': "bestaudio/best",
+                'logger': DummyLogger(),
+                'quiet': True,
+                'no_warnings': True,
+                'progress_hooks': [self.progress_hook],
+                'ignoreerrors': True,
+            }
+
         try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                result = ydl.extract_info(url, download=True)
-                input_file = ydl.prepare_filename(result)
-                self.add_log(f"Memulai encode video: {input_file}")
+            if platform == "youtube":
+                with yt_dlp.YoutubeDL(ydl_opts_v) as ydl:
+                    result_v = ydl.extract_info(url, download=True)
+                    video_file = ydl.prepare_filename(result_v)
+            
+                with yt_dlp.YoutubeDL(ydl_opts_a) as ydl:
+                    result_a = ydl.extract_info(url, download=True)
+                    audio_file = ydl.prepare_filename(result_a)
+
+                
                 if mode == "MP4":
-                    base, _ = os.path.splitext(input_file)
-                    output_file = f"{base}_{quality}.mp4"
-                    cmd = build_ffmpeg_cmd(input_file, output_file)
-                    self.add_log(f"Encoder terdeteksi: {cmd[7]}")
+                    base = result_v.get('title') or result_v.get('id') or "video"
+                    xname = sanitize_filename(base)
+                    output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
+                    cmd = double_cmd(video_file, audio_file, output_file)
                     self.run_ffmpeg_with_log(cmd, output_file)
-                    if os.path.exists(input_file):
-                        os.remove(input_file)
+
+                    if os.path.exists(video_file):
+                        os.remove(video_file)
+                    if os.path.exists(audio_file):
+                        os.remove(audio_file)
                 else:
                     self.add_log("File MP3 siap digunakan!")
-                    if os.path.exists(input_file):
-                        os.remove(input_file)
+                    if os.path.exists(audio_file):
+                        os.remove(audio_file)
+            else:
+                if quality == "360p":
+                    sfmt = "bestvideo[height<=360]+bestaudio/best"
+                elif quality == "480p":
+                    sfmt = "bestvideo[height<=480]+bestaudio/best"
+                elif quality == "720p":
+                    sfmt = "bestvideo[height<=720]+bestaudio/best"
+                elif quality == "1080p":
+                    sfmt = "bestvideo[height<=1080]+bestaudio/best"
+                else:
+                    sfmt = "bestvideo+bestaudio/best"
+
+                ydl_opts = {
+                    'outtmpl': f'{target_dir}/temp_.%(ext)s',
+                    'format': sfmt,
+                    'logger': DummyLogger(),
+                    'quiet': True,
+                    'no_warnings': True,
+                    'progress_hooks': [self.progress_hook],
+                    'ignoreerrors': True,
+                }
+
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    result_s = ydl.extract_info(url, download=True)
+                    single_file = ydl.prepare_filename(result_s)
+                    if mode == "MP4":
+                        base = result_s.get('title') or result_s.get('id') or "video"
+                        xname = sanitize_filename(base)[:50]
+                        output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
+                        cmd = single_cmd(single_file, output_file)
+                        self.run_ffmpeg_with_log(cmd, output_file)
+                        if os.path.exists(single_file):
+                           os.remove(single_file)
 
         except Exception as e:
             self.add_log(f"Error download :{e}")
