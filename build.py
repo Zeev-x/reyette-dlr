@@ -17,7 +17,6 @@ cmd = [
     f"py -3.12 -m venv {env_path}",
     f"call {env_path}\\Scripts\\activate",
     f"{env_path}\\Scripts\\python.exe -m pip install --upgrade kivy yt-dlp pyinstaller pillow",
-    f"{env_path}\\Scripts\\python.exe main.py",
     f"{env_path}\\Scripts\\pyinstaller.exe main.spec",
     f"{env_path}\\Scripts\\deactivate",
 ]
@@ -103,11 +102,11 @@ def create_spec_file():
         print(f"Error writing to {file_location}: {e}")
 
 def after_build():
-    src = os.path.join("dist", f"{app_name}")
-    dst = os.path.join(os.getcwd(), f"{app_name}")
+    src = os.path.join("dist", app_name)
+    dst = os.path.join(os.getcwd(), app_name)
 
     dir_temp = [f"{env_path}", "icon", "build", "dist"]
-    file_temp = ["downloaderapp.kv", "main.spec", "main.py"]
+    file_temp = ["downloaderapp.kv", "main.spec", "main.py", "build.py"]
 
     if os.path.exists(src):
         shutil.move(src, dst)
@@ -129,5 +128,6 @@ if __name__ == "__main__":
     try:
         create_spec_file()
         run_cmd()
+        after_build()
     except KeyboardInterrupt:
         print("Closing by user")
