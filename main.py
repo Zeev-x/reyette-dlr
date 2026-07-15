@@ -11,7 +11,7 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 
-BASE_DIR = "Reyette-Downloader"
+BASE_DIR = "D:\\Reyette-Downloader"
 
 def sanitize_filename(name: str) -> str:
     name = re.sub(r'[\\/*?:"<>|#]', '', name)
@@ -188,7 +188,7 @@ class DownloaderLayout(BoxLayout):
                 'postprocessors': [{
                     'key': 'FFmpegExtractAudio',
                     'preferredcodec': 'mp3',
-                    'preferredquality': '192',
+                    'preferredquality': '320',
                 }],
                 'logger': DummyLogger(),
                 'quiet': True,
@@ -209,7 +209,7 @@ class DownloaderLayout(BoxLayout):
                 fmt = "bestvideo"
 
             ydl_opts_v = {
-                'outtmpl': f'{target_dir}/v_.%(ext)s',
+                'outtmpl': f'{target_dir}/v_temp.%(ext)s',
                 'format': fmt,
                 'logger': DummyLogger(),
                 'quiet': True,
@@ -219,7 +219,7 @@ class DownloaderLayout(BoxLayout):
             }
 
             ydl_opts_a = {
-                'outtmpl': f'{target_dir}/a_.%(ext)s',
+                'outtmpl': f'{target_dir}/a_temp.%(ext)s',
                 'format': "bestaudio/best",
                 'logger': DummyLogger(),
                 'quiet': True,
@@ -243,17 +243,18 @@ class DownloaderLayout(BoxLayout):
                     base = result_v.get('title') or result_v.get('id') or "video"
                     xname = sanitize_filename(base)
                     output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
-                    cmd = double_cmd(video_file, audio_file, output_file)
-                    self.run_ffmpeg_with_log(cmd, output_file)
-
-                    if os.path.exists(video_file):
-                        os.remove(video_file)
-                    if os.path.exists(audio_file):
-                        os.remove(audio_file)
+                    if os.path.exists(video_file) and os.path.exists(audio_file):
+                        cmd = double_cmd(video_file, audio_file, output_file)
+                        self.run_ffmpeg_with_log(cmd, output_file)
+                        if os.path.exists(video_file):
+                            os.remove(video_file)
+                        if os.path.exists(audio_file):
+                            os.remove(audio_file)
+                    else:
+                        self.add_log("Error: file hasil download tidak ditemukan!")
                 else:
                     self.add_log("File MP3 siap digunakan!")
-                    if os.path.exists(audio_file):
-                        os.remove(audio_file)
+
             else:
                 if quality == "360p":
                     sfmt = "bestvideo[height<=360]+bestaudio/best"
@@ -267,7 +268,7 @@ class DownloaderLayout(BoxLayout):
                     sfmt = "bestvideo+bestaudio/best"
 
                 ydl_opts = {
-                    'outtmpl': f'{target_dir}/temp_.%(ext)s',
+                    'outtmpl': f'{target_dir}/s_temp.%(ext)s',
                     'format': sfmt,
                     'logger': DummyLogger(),
                     'quiet': True,
@@ -283,10 +284,11 @@ class DownloaderLayout(BoxLayout):
                         base = result_s.get('title') or result_s.get('id') or "video"
                         xname = sanitize_filename(base)[:50]
                         output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
-                        cmd = single_cmd(single_file, output_file)
-                        self.run_ffmpeg_with_log(cmd, output_file)
                         if os.path.exists(single_file):
-                           os.remove(single_file)
+                            cmd = single_cmd(single_file, output_file)
+                            self.run_ffmpeg_with_log(cmd, output_file)
+                            if os.path.exists(single_file):
+                                os.remove(single_file)
 
         except Exception as e:
             self.add_log(f"Error download :{e}")
