@@ -230,19 +230,17 @@ class DownloaderLayout(BoxLayout):
 
         try:
             if platform == "youtube":
-                with yt_dlp.YoutubeDL(ydl_opts_v) as ydl:
-                    result_v = ydl.extract_info(url, download=True)
-                    video_file = ydl.prepare_filename(result_v)
-            
-                with yt_dlp.YoutubeDL(ydl_opts_a) as ydl:
-                    result_a = ydl.extract_info(url, download=True)
-                    audio_file = ydl.prepare_filename(result_a)
-
-                
                 if mode == "MP4":
-                    base = result_v.get('title') or result_v.get('id') or "video"
-                    xname = sanitize_filename(base)
-                    output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
+                    with yt_dlp.YoutubeDL(ydl_opts_v) as ydl:
+                        result_v = ydl.extract_info(url, download=True)
+                        video_file = ydl.prepare_filename(result_v)
+            
+                    with yt_dlp.YoutubeDL(ydl_opts_a) as ydl:
+                        result_a = ydl.extract_info(url, download=True)
+                        audio_file = ydl.prepare_filename(result_a)
+                        base = result_v.get('title') or result_v.get('id') or "video"
+                        xname = sanitize_filename(base)
+                        output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
                     if os.path.exists(video_file) and os.path.exists(audio_file):
                         cmd = double_cmd(video_file, audio_file, output_file)
                         self.run_ffmpeg_with_log(cmd, output_file)
@@ -253,7 +251,10 @@ class DownloaderLayout(BoxLayout):
                     else:
                         self.add_log("Error: file hasil download tidak ditemukan!")
                 else:
-                    self.add_log("File MP3 siap digunakan!")
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        result_a = ydl.extract_info(url, download=True)
+                        audio_file = ydl.prepare_filename(result_a)
+                        self.add_log("File MP3 siap digunakan!")
 
             else:
                 if quality == "360p":
@@ -267,7 +268,7 @@ class DownloaderLayout(BoxLayout):
                 else:
                     sfmt = "bestvideo+bestaudio/best"
 
-                ydl_opts = {
+                ydl_opts_sv = {
                     'outtmpl': f'{target_dir}/s_temp.%(ext)s',
                     'format': sfmt,
                     'logger': DummyLogger(),
@@ -277,7 +278,7 @@ class DownloaderLayout(BoxLayout):
                     'ignoreerrors': True,
                 }
 
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                with yt_dlp.YoutubeDL(ydl_opts_sv) as ydl:
                     result_s = ydl.extract_info(url, download=True)
                     single_file = ydl.prepare_filename(result_s)
                     if mode == "MP4":
