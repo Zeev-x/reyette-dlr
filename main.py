@@ -7,6 +7,7 @@ import subprocess
 import yt_dlp
 import threading
 import re
+import datetime
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
@@ -229,7 +230,7 @@ class DownloaderLayout(BoxLayout):
             }
 
         try:
-            if platform == "youtube":
+            if platform == "youtube" or platform == "facebook" or platform == "instagram":
                 if mode == "MP4":
                     with yt_dlp.YoutubeDL(ydl_opts_v) as ydl:
                         result_v = ydl.extract_info(url, download=True)
@@ -238,9 +239,15 @@ class DownloaderLayout(BoxLayout):
                     with yt_dlp.YoutubeDL(ydl_opts_a) as ydl:
                         result_a = ydl.extract_info(url, download=True)
                         audio_file = ydl.prepare_filename(result_a)
-                        base = result_v.get('title') or result_v.get('id') or "video"
-                        xname = sanitize_filename(base)
-                        output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
+
+                        if platform == "youtube":
+                            base = result_v.get('title') or result_v.get('id') or "video"
+                            xname = sanitize_filename(base)
+                            output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
+                        else:
+                            date_now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                            output_file = os.path.join(target_dir, f"reyette_{platform}_dlr_{date_now}.mp4")
+
                     if os.path.exists(video_file) and os.path.exists(audio_file):
                         cmd = double_cmd(video_file, audio_file, output_file)
                         self.run_ffmpeg_with_log(cmd, output_file)
@@ -282,9 +289,13 @@ class DownloaderLayout(BoxLayout):
                     result_s = ydl.extract_info(url, download=True)
                     single_file = ydl.prepare_filename(result_s)
                     if mode == "MP4":
-                        base = result_s.get('title') or result_s.get('id') or "video"
-                        xname = sanitize_filename(base)[:50]
-                        output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
+                        if platform == "xhamster" or platform == "xvideos" or platform == "xnxx":
+                            base = result_s.get('title') or result_s.get('id') or "video"
+                            xname = sanitize_filename(base)
+                            output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
+                        else:
+                            date_now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                            output_file = os.path.join(target_dir, f"reyette_{platform}_dlr_{date_now}.mp4")
                         if os.path.exists(single_file):
                             cmd = single_cmd(single_file, output_file)
                             self.run_ffmpeg_with_log(cmd, output_file)
