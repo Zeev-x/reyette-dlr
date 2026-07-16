@@ -1,7 +1,7 @@
 import os
 import shutil
 
-app_name = "Reyette DLR PC"
+app_name = "Premium Downloader PC"
 env_path = "Reyette_Roxylious_Atelier"
 url_1 = "https://zeev-x.github.io/reyette-dlr/main.py"
 url_2 = "https://zeev-x.github.io/reyette-dlr/downloaderapp.kv"
