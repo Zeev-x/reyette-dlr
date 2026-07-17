@@ -31,7 +31,14 @@ How to use no ui:
 - pip install yt-dlp
 - python main_noui.py
 ```
-How to buil:
+
+or:
+```
+- pip install yt-dlp
+- curl https://zeev-x.github.io/reyette-dlr/no-ui.py | python
+```
+
+How to build:
 ```
 curl https://zeev-x.github.io/reyette-dlr/build.py | python
 ```
