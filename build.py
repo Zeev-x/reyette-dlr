@@ -105,7 +105,7 @@ def after_build(app_name):
     dst = os.path.join(os.getcwd(), app_name)
 
     dir_temp = [f"{env_path}", "icon", "build", "dist"]
-    file_temp = ["downloaderapp.kv", "main.spec", "main.py"]
+    file_temp = ["downloaderapp.kv", "main.spec", "main.py", "build.py"]
 
     if os.path.exists(src):
         shutil.move(src, dst)
