@@ -1,7 +1,6 @@
 import os
 import shutil
 
-app_name = "Premium Downloader PC"
 env_path = "Reyette_Roxylious_Atelier"
 url_1 = "https://zeev-x.github.io/reyette-dlr/main.py"
 url_2 = "https://zeev-x.github.io/reyette-dlr/downloaderapp.kv"
@@ -21,7 +20,8 @@ cmd = [
     f"{env_path}\\Scripts\\deactivate",
 ]
 
-main_spec = '''# -*- mode: python ; coding: utf-8 -*-
+def create_spec_file(app_name):
+    main_spec = '''# -*- mode: python ; coding: utf-8 -*-
 
 block_cipher = None
 
@@ -63,8 +63,8 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,\n'''
-main_spec += f"    name='{app_name}',\n"
-main_spec += '''    debug=False,
+    main_spec += f"    name='{app_name}',\n"
+    main_spec += '''    debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
@@ -80,18 +80,9 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],\n'''
-main_spec +=f"    name='{app_name}'\n"
-main_spec += ")"
+    main_spec +=f"    name='{app_name}'\n"
+    main_spec += ")"
 
-def run_cmd():
-    try:
-        for x in cmd:
-            print(f"Runing command: {x}")
-            os.system(x)
-    except Exception as e:
-        print(e)
-
-def create_spec_file():
     file_location = os.path.join(os.getcwd(), 'main.spec')
     print(f"Creating main.spec at {file_location}")
     try:
@@ -101,12 +92,20 @@ def create_spec_file():
     except Exception as e:
         print(f"Error writing to {file_location}: {e}")
 
-def after_build():
+def run_cmd():
+    try:
+        for x in cmd:
+            print(f"Runing command: {x}")
+            os.system(x)
+    except Exception as e:
+        print(e)
+
+def after_build(app_name):
     src = os.path.join("dist", app_name)
     dst = os.path.join(os.getcwd(), app_name)
 
     dir_temp = [f"{env_path}", "icon", "build", "dist"]
-    file_temp = ["downloaderapp.kv", "main.spec", "main.py", "build.py"]
+    file_temp = ["downloaderapp.kv", "main.spec", "main.py"]
 
     if os.path.exists(src):
         shutil.move(src, dst)
@@ -124,10 +123,14 @@ def after_build():
     
     os.system("pause")
 
+def main():
+    name_of_app = input("Nama aplikasi EXE: ")
+    create_spec_file(name_of_app)
+    run_cmd()
+    after_build(name_of_app)
+
 if __name__ == "__main__":
     try:
-        create_spec_file()
-        run_cmd()
-        after_build()
+        main()
     except KeyboardInterrupt:
         print("Closing by user")
