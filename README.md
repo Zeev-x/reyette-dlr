@@ -29,18 +29,14 @@ How to use with ui (Work on windows only):
 How to use no ui:
 ```bash
 - pip install yt-dlp
+- curl https://zeev-x.github.io/reyette-dlr/main_noui.py >> main_noui.py
 - python main_noui.py
 ```
 
-or:
-```
-- pip install yt-dlp
-- curl https://zeev-x.github.io/reyette-dlr/main_noui.py | python
-```
-
 How to build:
-```
-curl https://zeev-x.github.io/reyette-dlr/build.py | python
+```bash
+- curl https://zeev-x.github.io/reyette-dlr/build.py >> build.py
+- python build.py
 ```
 ## Tahnks to
 * [yt-dlp](https://github.com/yt-dlp/yt-dlp)
