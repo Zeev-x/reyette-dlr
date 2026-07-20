@@ -35,7 +35,7 @@ How to use no ui:
 
 How to build:
 ```bash
-- curl https://zeev-x.github.io/reyette-dlr/builder.py | python
+- curl https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/builder.py | python
 ```
 ## Tahnks to
 * [yt-dlp](https://github.com/yt-dlp/yt-dlp)
