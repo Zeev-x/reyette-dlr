@@ -26,12 +26,21 @@ def os_system_cmd():
 
 def worker():
     cmd = os_system_cmd()
-    try:
-        for x in cmd:
-            print(f"Running > {x}")
-            subprocess.run(x, shell=True, check=True)
-    except Exception as e:
-        print("Error:", e)
+    if os_detector() == "Windows":
+        try:
+            for x in cmd:
+                print(f"Running > {x}")
+                subprocess.run(x, shell=True, check=True)
+        except Exception as e:
+            print("Error:", e)
+    else:
+        try:
+            for x in cmd:
+                print(f"Running > {x}")
+                os.system(x)
+        except Exception as e:
+            print("Error:", e)
+
 
 def after_work():
     try:
