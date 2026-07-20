@@ -29,7 +29,7 @@ How to use with ui (Work on windows only):
 How to use no ui:
 ```bash
 - pip install yt-dlp
-- curl https://zeev-x.github.io/reyette-dlr/main_noui.py >> main_noui.py
+- curl https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/main_noui.py >> main_noui.py
 - python main_noui.py
 ```
 
