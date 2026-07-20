@@ -1,51 +1,58 @@
-import os,platform, subprocess
+import os, platform, subprocess, shutil
 
-url = "https://zeev-x.github.io/reyette-dlr/reyette.py"
-name_file = "zero.py"
-
-files = [f"{name_file}"]
+url_win = "https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/reyette.py"
+url_nonwin = "https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/main_noui.py"
+name_file = "reyette.py"
+path_venv = ".reyette"
 
 def os_detector():
-    detect = platform.system()
-    if detect == "Windows":
-        return "cls"
+    return platform.system()
+
+def os_system_cmd():
+    if os_detector() == "Windows":
+        return [
+            f"curl -o {name_file} {url_win}",
+            "cls",
+            f"python {name_file}",
+        ]
     else:
-        return "clear"
+        return [
+            f"curl -o {name_file} {url_nonwin}",
+            f"python -m venv {path_venv}",
+            f"./{path_venv}/bin/python -m pip install yt-dlp",
+            "clear",
+            f"./{path_venv}/bin/python {name_file}",
+        ]
 
 def worker():
-    cmd = [
-        f"curl -o {name_file} {url}",
-        f"{os_detector()}",
-        f"python {name_file}",
-    ]
+    cmd = os_system_cmd()
     try:
         for x in cmd:
-            print(f"Runing > {x}")
-            subprocess.run(x, shell=True, stderr=True)
+            print(f"Running > {x}")
+            subprocess.run(x, shell=True, check=True)
     except Exception as e:
-        print(e)
+        print("Error:", e)
 
 def after_work():
     try:
-        for x in files:
-            print(f"Deleting > {x}")
-            with os.path.exists(x):
-                os.remove(x)
+        if os.path.exists(name_file):
+            print(f"Deleting file > {name_file}")
+            os.remove(name_file)
+        if os_detector() != "Windows" and os.path.exists(path_venv):
+            print(f"Deleting venv > {path_venv}")
+            shutil.rmtree(path_venv)
     except Exception as e:
-        print(e)
+        print("Cleanup error:", e)
 
 def main():
     try:
+        print(f"Detected OS: {os_detector()}")
         worker()
-        after_work()
     except KeyboardInterrupt:
         print("Exiting by user")
-        after_work()
-    except Exception as e:
-        print(e)
     finally:
+        after_work()
         print("All Good")
-        os.system("pause")
 
 if __name__ == "__main__":
     main()
