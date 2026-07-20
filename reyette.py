@@ -121,7 +121,6 @@ def after_build(app_name):
             print(f"Deleting {y}")
             os.remove(y)
     
-    os.system("pause")
 
 def main():
     name_of_app = input("Nama aplikasi EXE: ")
