@@ -2,9 +2,9 @@ import os
 import shutil
 
 env_path = "Reyette_Roxylious_Atelier"
-url_1 = "https://zeev-x.github.io/reyette-dlr/main.py"
-url_2 = "https://zeev-x.github.io/reyette-dlr/downloaderapp.kv"
-url_3 = "https://zeev-x.github.io/reyette-dlr/icon/icon_circle.ico"
+url_1 = "https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/main.py"
+url_2 = "https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/downloaderapp.kv"
+url_3 = "https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/icon/icon_circle.ico"
 
 data = []
 
