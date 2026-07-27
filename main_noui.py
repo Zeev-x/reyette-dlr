@@ -32,15 +32,15 @@ def get_quality():
     while True:
             x_qual = input("Pilih kualitas (360p/480p/720p/1080p/max): ").strip().lower()
             if x_qual == "360p" or x_qual == "360":
-                return 360
+                return "bestvideo[height<=360]"
             elif x_qual == "480p" or x_qual == "480":
-                return 480
+                return "bestvideo[height<=480]"
             elif x_qual == "720p" or x_qual == "720":
-                return 720
+                return "bestvideo[height<=720]"
             elif x_qual == "1080p" or x_qual == "1080":
-                return 1080
+                return "bestvideo[height<=1080]"
             elif x_qual == "max":
-                return 9999
+                return "bestvideo"
             else:
                 print("Pilih kualitas yang valid!")
 
@@ -131,7 +131,7 @@ def audio_cmd(audio_file, output_file, cover_url, encoder="aac"):
 
     if process.returncode == 0 and os.path.exists(audio_file):
         os.remove(audio_file)
-        
+
     return cmd
 
 def detect_platform(url: str) -> str:
@@ -183,9 +183,9 @@ def do_work():
              print("❌ Gagal encode audio")
 
     else:  # MP4
-        quality = get_quality()
+        fmt = get_quality()
 
-        ydl_opts_v = {'outtmpl': f'{target_dir}/v_temp.%(ext)s', 'format': f'bestvideo[height<={quality}]'}
+        ydl_opts_v = {'outtmpl': f'{target_dir}/v_temp.%(ext)s', 'format': fmt}
         ydl_opts_a = {'outtmpl': f'{target_dir}/a_temp.%(ext)s', 'format': 'bestaudio/best'}
 
         with yt_dlp.YoutubeDL(ydl_opts_v) as ydl:
