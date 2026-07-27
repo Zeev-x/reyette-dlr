@@ -5,8 +5,44 @@ import os
 import subprocess
 import yt_dlp
 import re
+import requests
 
 BASE_DIR = "Reyette-Downloader"
+COVER_URL = "https://raw.githubusercontent.com/Zeev-x/jalanin-dulu/refs/heads/main/HOEizhAacAAU07P.jpg"
+
+def get_url():
+    while True:
+        x_url = input("Masukkan URL: ").strip()
+        if x_url == "":
+            print("Masukan Valid URL!")
+        else:
+            return x_url
+
+def get_type():
+    while True:
+        x_type = input("Pilih mode (MP3/MP4): ").strip().upper()
+        if x_type == "MP3":
+            return x_type
+        elif x_type == "MP4":
+            return x_type
+        else:
+            print("Pilih mode yang sesuai! (mp3/mp4)")
+
+def get_quality():
+    while True:
+            x_qual = input("Pilih kualitas (360p/480p/720p/1080p/max): ").strip().lower()
+            if x_qual == "360p" or x_qual == "360":
+                return 360
+            elif x_qual == "480p" or x_qual == "480":
+                return 480
+            elif x_qual == "720p" or x_qual == "720":
+                return 720
+            elif x_qual == "1080p" or x_qual == "1080":
+                return 1080
+            elif x_qual == "max":
+                return 9999
+            else:
+                print("Pilih kualitas yang valid!")
 
 def sanitize_filename(name: str) -> str:
     name = re.sub(r'[\\/*?:"<>|#]', '', name)
@@ -58,6 +94,46 @@ def single_cmd(video_file, output_file, encoder=None):
     cmd += ["-c:a", "aac", "-b:a", "320k", output_file]
     return cmd
 
+def audio_cmd(audio_file, output_file, cover_url, encoder="aac"):
+    cover_file = os.path.join(
+        os.path.dirname(output_file),
+        os.path.splitext(os.path.basename(audio_file))[0] + "_cover.jpg"
+    )
+
+    try:
+        r = requests.get(cover_url, timeout=10)
+        r.raise_for_status()
+        with open(cover_file, "wb") as f:
+            f.write(r.content)
+    except Exception as e:
+        print(f"[ERROR] Gagal download cover: {e}")
+        return None
+
+    cmd = [
+        "ffmpeg", "-y",
+        "-i", audio_file,
+        "-i", cover_file,
+        "-map", "0:a", "-map", "1:v",
+        "-c:a", "libmp3lame", "-q:a", "0",
+        "-c:v", "mjpeg",
+        "-disposition:v", "attached_pic",
+        "-id3v2_version", "3",
+        "-metadata:s:v", "title=Reyette Atelier",
+        "-metadata:s:v", "comment=Premium Downloader",
+        output_file
+    ]
+
+    process = subprocess.run(cmd)
+
+    # cleanup cover
+    if process.returncode == 0 and os.path.exists(cover_file):
+        os.remove(cover_file)
+
+    if process.returncode == 0 and os.path.exists(audio_file):
+        os.remove(audio_file)
+        
+    return cmd
+
 def detect_platform(url: str) -> str:
     if "youtube.com" in url or "youtu.be" in url:
         return "youtube"
@@ -78,10 +154,9 @@ def detect_platform(url: str) -> str:
     else:
         return "other"
 
-def main():
-    url = input("Masukkan URL: ").strip()
-    mode = input("Pilih mode (MP3/MP4): ").strip().upper()
-    quality = input("Pilih kualitas (360p/480p/720p/1080p/max): ").strip().lower()
+def do_work():
+    url = get_url()
+    mode = get_type()
 
     platform = detect_platform(url)
     print(f"Mulai mengunduh dari {platform}: {url}")
@@ -91,32 +166,26 @@ def main():
 
     if mode == "MP3":
         ydl_opts = {
-            'outtmpl': f'{target_dir}/%(title)s.%(ext)s',
+            'outtmpl': f'{target_dir}/a_temp.%(ext)s',
             'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '320',
-            }],
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             result = ydl.extract_info(url, download=True)
             audio_file = ydl.prepare_filename(result)
-        print(f"✅ File MP3 siap: {audio_file}")
+
+        base = result.get('title') or result.get('id') or "audio"
+        xname = sanitize_filename(base)
+        output_file = os.path.join(target_dir, f"{xname}.mp3")
+
+        if audio_cmd(audio_file, output_file, COVER_URL):
+            print(f"✅ File MP3 siap: {output_file}")
+        else:
+             print("❌ Gagal encode audio")
 
     else:  # MP4
-        if quality == "360p":
-            fmt = "bestvideo[height<=360]"
-        elif quality == "480p":
-            fmt = "bestvideo[height<=480]"
-        elif quality == "720p":
-            fmt = "bestvideo[height<=720]"
-        elif quality == "1080p":
-            fmt = "bestvideo[height<=1080]"
-        else:
-            fmt = "bestvideo"
+        quality = get_quality()
 
-        ydl_opts_v = {'outtmpl': f'{target_dir}/v_temp.%(ext)s', 'format': fmt}
+        ydl_opts_v = {'outtmpl': f'{target_dir}/v_temp.%(ext)s', 'format': f'bestvideo[height<={quality}]'}
         ydl_opts_a = {'outtmpl': f'{target_dir}/a_temp.%(ext)s', 'format': 'bestaudio/best'}
 
         with yt_dlp.YoutubeDL(ydl_opts_v) as ydl:
@@ -142,4 +211,4 @@ def main():
             print("❌ Error: file hasil download tidak ditemukan!")
 
 if __name__ == "__main__":
-    main()
+    do_work()
