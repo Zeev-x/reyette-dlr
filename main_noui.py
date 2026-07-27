@@ -159,12 +159,12 @@ def do_work():
     mode = get_type()
 
     platform = detect_platform(url)
-    print(f"Mulai mengunduh dari {platform}: {url}")
 
     target_dir = os.path.join(BASE_DIR, "audio" if mode == "MP3" else "video", platform)
     os.makedirs(target_dir, exist_ok=True)
 
     if mode == "MP3":
+        print(f"Mulai mengunduh dari {platform}: {url}")
         ydl_opts = {
             'outtmpl': f'{target_dir}/a_temp.%(ext)s',
             'format': 'bestaudio/best',
@@ -184,7 +184,7 @@ def do_work():
 
     else:  # MP4
         fmt = get_quality()
-
+        print(f"Mulai mengunduh dari {platform}: {url}")
         ydl_opts_v = {'outtmpl': f'{target_dir}/v_temp.%(ext)s', 'format': fmt}
         ydl_opts_a = {'outtmpl': f'{target_dir}/a_temp.%(ext)s', 'format': 'bestaudio/best'}
 
