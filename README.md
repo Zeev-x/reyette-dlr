@@ -27,15 +27,15 @@ How to use with ui (Work on windows only):
 ```
 
 How to use no ui:
-```bash
-- pip install yt-dlp requests
-- curl https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/main_noui.py >> main_noui.py
-- python main_noui.py
+```cmd
+pip install yt-dlp requests
+curl https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/main_noui.py >> main_noui.py
+python main_noui.py
 ```
 
 How to build:
-```bash
-- curl https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/builder.py | python
+```cmd
+curl https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/builder.py >> build.py && python build.py
 ```
 ## Tahnks to
 * [yt-dlp](https://github.com/yt-dlp/yt-dlp)
