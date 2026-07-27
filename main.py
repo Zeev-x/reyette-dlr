@@ -8,11 +8,13 @@ import yt_dlp
 import threading
 import re
 import datetime
+import requests
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 
 BASE_DIR = "D:\\Reyette-Downloader"
+COVER_URL = "https://raw.githubusercontent.com/Zeev-x/jalanin-dulu/refs/heads/main/HOEizhAacAAU07P.jpg"
 
 def sanitize_filename(name: str) -> str:
     name = re.sub(r'[\\/*?:"<>|#]', '', name)
@@ -86,6 +88,46 @@ def single_cmd(video_file, output_file, encoder=None):
 
     cmd += ["-c:a", "aac", "-b:a", "320k", output_file]
     return cmd
+
+def audio_cmd(audio_file, output_file, cover_url, encoder="aac"):
+    cover_file = os.path.join(
+        os.path.dirname(output_file),
+        os.path.splitext(os.path.basename(audio_file))[0] + "_cover.jpg"
+    )
+
+    try:
+        r = requests.get(cover_url, timeout=10)
+        r.raise_for_status()
+        with open(cover_file, "wb") as f:
+            f.write(r.content)
+    except Exception as e:
+        print(f"[ERROR] Gagal download cover: {e}")
+        return None
+
+    cmd = [
+        "ffmpeg", "-y",
+        "-i", audio_file,
+        "-i", cover_file,
+        "-map", "0:a", "-map", "1:v",
+        "-c:a", "libmp3lame", "-q:a", "0",
+        "-c:v", "mjpeg",
+        "-disposition:v", "attached_pic",
+        "-id3v2_version", "3",
+        "-metadata:s:v", "title=Reyette Atelier",
+        "-metadata:s:v", "comment=Premium Downloader",
+        output_file
+    ]
+
+    process = subprocess.run(cmd)
+
+    # cleanup cover
+    if process.returncode == 0 and os.path.exists(cover_file):
+        os.remove(cover_file)
+
+    if process.returncode == 0 and os.path.exists(audio_file):
+        os.remove(audio_file)
+        
+    return process.returncode == 0
 
 class DummyLogger:
     def debug(self, msg): pass
@@ -184,19 +226,26 @@ class DownloaderLayout(BoxLayout):
 
         if mode == "MP3":
             ydl_opts = {
-                'outtmpl': f'{target_dir}/%(title)s.%(ext)s',
+                'outtmpl': f'{target_dir}/a_temp.%(ext)s',
                 'format': 'bestaudio/best',
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '320',
-                }],
                 'logger': DummyLogger(),
                 'quiet': True,
                 'no_warnings': True,
                 'progress_hooks': [self.progress_hook],
                 'ignoreerrors': True,
             }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                result = ydl.extract_info(url, download=True)
+                audio_file = ydl.prepare_filename(result)
+            
+            base = result.get('title') or result.get('id') or "audio"
+            xname = sanitize_filename(base)
+            output_file = os.path.join(target_dir, f"{xname}.mp3")
+            
+            if audio_cmd(audio_file, output_file, COVER_URL):
+                print(f"✅ File MP3 siap: {output_file}")
+            else:
+                print("❌ Gagal encode audio")
         else:
             if quality == "360p":
                 fmt = "bestvideo[height<=360]"
@@ -258,10 +307,7 @@ class DownloaderLayout(BoxLayout):
                     else:
                         self.add_log("Error: file hasil download tidak ditemukan!")
                 else:
-                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        result_a = ydl.extract_info(url, download=True)
-                        audio_file = ydl.prepare_filename(result_a)
-                        self.add_log("File MP3 siap digunakan!")
+                    self.add_log("File MP3 siap digunakan!")
 
             else:
                 if quality == "360p":
