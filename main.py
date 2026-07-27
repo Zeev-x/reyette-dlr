@@ -118,7 +118,13 @@ def audio_cmd(audio_file, output_file, cover_url, encoder="aac"):
         output_file
     ]
 
-    process = subprocess.run(cmd)
+    process = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        creationflags=subprocess.CREATE_NO_WINDOW
+        )
 
     # cleanup cover
     if process.returncode == 0 and os.path.exists(cover_file):
