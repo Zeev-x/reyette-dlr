@@ -198,7 +198,7 @@ def do_work():
 
         base = result_v.get('title') or result_v.get('id') or "video"
         xname = sanitize_filename(base)
-        output_file = os.path.join(target_dir, f"{xname}_{quality}.mp4")
+        output_file = os.path.join(target_dir, f"{xname}.mp4")
 
         if os.path.exists(video_file) and os.path.exists(audio_file):
             print("🔄 Mulai proses encode...")
