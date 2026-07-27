@@ -28,7 +28,7 @@ How to use with ui (Work on windows only):
 
 How to use no ui:
 ```bash
-- pip install yt-dlp
+- pip install yt-dlp requests
 - curl https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/main_noui.py >> main_noui.py
 - python main_noui.py
 ```
