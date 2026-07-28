@@ -8,8 +8,7 @@ import re
 import requests
 
 BASE_DIR = "Reyette-Downloader"
-COVER_URL = "https://raw.githubusercontent.com/Zeev-x/jalanin-dulu/refs/heads/main/HOEizhAacAAU07P.jpg"
-
+COVER_URL = "https://raw.githubusercontent.com/Zeev-x/reyette-dlr/refs/heads/main/logo/reyette_logo.png"
 def get_url():
     while True:
         x_url = input("Masukkan URL: ").strip()
