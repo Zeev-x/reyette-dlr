@@ -14,7 +14,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 
 BASE_DIR = "D:\\Reyette-Downloader"
-COVER_URL = "https://raw.githubusercontent.com/Zeev-x/jalanin-dulu/refs/heads/main/HOEizhAacAAU07P.jpg"
+COVER_URL = "https://raw.githubusercontent.com/Zeev-x/reyette-dlr/refs/heads/main/logo/reyette_logo.png"
 
 def sanitize_filename(name: str) -> str:
     name = re.sub(r'[\\/*?:"<>|#]', '', name)
