@@ -89,7 +89,7 @@ def single_cmd(video_file, output_file, encoder=None):
     cmd += ["-c:a", "aac", "-b:a", "320k", output_file]
     return cmd
 
-def audio_cmd(audio_file, output_file, cover_url, encoder="aac"):
+def audio_cmd(self, audio_file, output_file, cover_url, encoder="aac"):
     cover_file = os.path.join(
         os.path.dirname(output_file),
         os.path.splitext(os.path.basename(audio_file))[0] + "_cover.jpg"
@@ -118,13 +118,20 @@ def audio_cmd(audio_file, output_file, cover_url, encoder="aac"):
         output_file
     ]
 
-    process = subprocess.run(
+    process = subprocess.Popen(
         cmd,
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
         encoding="utf-8",
         creationflags=subprocess.CREATE_NO_WINDOW
         )
+    for line in process.stdout:
+        line = line.strip()
+        if line:
+            self.add_log(line)
+
+    process.wait()
 
     # cleanup cover
     if process.returncode == 0 and os.path.exists(cover_file):
@@ -248,10 +255,13 @@ class DownloaderLayout(BoxLayout):
             xname = sanitize_filename(base)
             output_file = os.path.join(target_dir, f"{xname}.mp3")
             
-            if audio_cmd(audio_file, output_file, COVER_URL):
+            if audio_cmd(self, audio_file, output_file, COVER_URL):
                 print(f"✅ File MP3 siap: {output_file}")
             else:
                 print("❌ Gagal encode audio")
+
+            return # return <-- Sering terlupakan padahal penting cok :v
+        
         else:
             if quality == "360p":
                 fmt = "bestvideo[height<=360]"
@@ -353,6 +363,8 @@ class DownloaderLayout(BoxLayout):
                             self.run_ffmpeg_with_log(cmd, output_file)
                             if os.path.exists(single_file):
                                 os.remove(single_file)
+                    else:
+                        self.add_log("File MP3 siap digunakan!")
 
         except Exception as e:
             self.add_log(f"Error download :{e}")
