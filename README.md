@@ -35,7 +35,7 @@ python main_noui.py
 
 How to build:
 ```cmd
-curl https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/builder.py >> build.py && python build.py
+curl https://raw.githubusercontent.com/Zeev-x/reyette-dlr/main/builder.py >> build.py && python builder.py
 ```
 ## Tahnks to
 * [yt-dlp](https://github.com/yt-dlp/yt-dlp)
